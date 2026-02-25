@@ -4,20 +4,25 @@ from os.path import isfile
 from config import MAX_CHARS
 
 def get_file_content(working_directory, file_path):
-    abs_path = os.path.abspath(working_directory)
+    base_dir = os.path.abspath(working_directory)
+    target_path = os.path.abspath(os.path.join(base_dir, file_path))
 
 
-    valid_target_dir = os.path.commonpath([abs_path, file_path]) == abs_path
+
+    valid_target_dir = os.path.commonpath([base_dir, target_path]) == base_dir
     if not valid_target_dir:
-        return f'Error: Cannot read "{file_path} as it is outside the path permitted"'
+        return f'Error: Cannot read "{file_path} as it is outside the path permitted'
 
     if not isfile(file_path):
         return f'Error: {file_path} is not a file'
 
 
-    with open(file_path, "r") as f:
+    with open(target_path, "r") as f:
         file_content_string = f.read(MAX_CHARS)
 
         if f.read(1):
             file_content_string += f'[...File "{file_path}" truncated at {MAX_CHARS} characters]'
+
+
+    return file_content_string
         

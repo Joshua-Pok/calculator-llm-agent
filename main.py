@@ -3,6 +3,8 @@ import argparse
 from dotenv import load_dotenv
 from google import genai
 from google.genai import types
+from prompts.prompts import system_prompt
+from functions.call_function import available_functions
 
 def main():
     print("Hello from llm-agent-python!")
@@ -23,11 +25,15 @@ def main():
     messages = [types.Content(role="user", parts=[types.Part(text=args.user_prompt)])]
 
     response = client.models.generate_content(
-        model="gemini-2.5-flash", contents=messages
+        model="gemini-2.5-flash", contents=messages, config=types.GenerateContentConfig(tools=[available_functions], system_instruction=system_prompt)
     )
 
 
-    print(response.text)
+    if response.function_calls:
+        for fn in response.function_calls:
+            print(f"Calling function: {fn.name}({fn.args})")
+    else:
+        print(response.text)
 
     if response.usage_metadata is None:
         raise RuntimeError("Gemini API request failed")
